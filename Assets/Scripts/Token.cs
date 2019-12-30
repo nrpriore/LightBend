@@ -42,6 +42,7 @@ public class Token : MonoBehaviour {
 				transform.localPosition = Vector2.Lerp(transform.localPosition, _lerpTarget, Time.deltaTime * LERP_SPEED);
 
 				if(((Vector2)transform.localPosition - _lerpTarget).magnitude <= REDRAW_DISTANCE && !_onTile) {
+					gameObject.GetComponent<SpriteRenderer>().sortingOrder = 2;
 					_level.AssignTokenToTile(this, _lerpTarget);
 					_onTile = true;
 
@@ -57,6 +58,7 @@ public class Token : MonoBehaviour {
 		_offset = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.localPosition;
 		_initialPos = TargetTilePosition(transform.localPosition);
 		_dragging = true;
+		gameObject.GetComponent<SpriteRenderer>().sortingOrder = 3;
 	}
 	public void OnMouseDrag() {
 		Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -88,6 +90,12 @@ public class Token : MonoBehaviour {
 			(int)Mathf.Max(0, Mathf.Min(LevelController.GridSize.x - 1, endPosition.x + 0.5f)),
 			(int)Mathf.Max(0, Mathf.Min(LevelController.GridSize.y - 1, endPosition.y + 0.5f))
 		);
+
+		Tile tile = _level.Grid[(int)nearestTilePosition.x][(int)nearestTilePosition.y];
+		if((tile.Token != null && tile.Token != this) || !tile.Enabled) {
+			return _initialPos;
+		}
+
 		float distanceToNearestTile = (nearestTilePosition - endPosition).magnitude;
 
 		return (distanceToNearestTile <= MAX_SNAP_DISTANCE || MAX_SNAP_DISTANCE == 0)? nearestTilePosition : _initialPos;

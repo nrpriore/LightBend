@@ -36,7 +36,7 @@ public class LevelController : MonoBehaviour {
 			_grid[x] = new Tile[(int)size.y];
 
 			for(int y = 0; y < size.y; y++) {
-				bool enabled = true;
+				bool enabled = !IsBorder(x, y);
 				_grid[x][y] = new Tile(enabled);
 
 				if(enabled) {
@@ -50,7 +50,17 @@ public class LevelController : MonoBehaviour {
 	// Sets up the level. Adds components and builds the initial path
 	public void CreateLevel(LightSegment startSegment) {
 		Vector2 position = new Vector2(2,2);
-		Token token = Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		position = new Vector2(1,2);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		position = new Vector2(5,2);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		position = new Vector2(3,2);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		position = new Vector2(4,2);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		position = new Vector2(1,1);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
 
 		_startSegment = startSegment;
 		BuildPath();
@@ -64,5 +74,10 @@ public class LevelController : MonoBehaviour {
 	// Builds the LightPath on the screen
 	public void BuildPath() {
 		_path.Build(_startSegment);
+	}
+
+
+	private bool IsBorder(int x, int y) {
+		return x == 0 || x == GridSize.x - 1 || y == 0 || y == GridSize.y - 1;
 	}
 }

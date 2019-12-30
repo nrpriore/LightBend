@@ -16,8 +16,8 @@ public class GameController : MonoBehaviour {
 	void Awake() {
 		AddComponents();
 
-		_lc.CreateGrid(new Vector2(5,7));
-		_lc.CreateLevel(new LightSegment(new Vector2(0,4), new Vector2(-1, 0), new Vector2(1, -1)));
+		_lc.CreateGrid(new Vector2(7,9));
+		_lc.CreateLevel(new LightSegment(new Vector2(0,5), new Vector2(0, 1), new Vector2(1, -1)));
 	}
 
 

@@ -30,4 +30,13 @@ public class LightSegment {
 			(_tilePosition.x == LevelController.GridSize.x - 1 && _startSide.x + _direction.x == 1)		// Right
 		;}
 	}
+
+	// Generates an ID to check for duplicate Segments (indicating we should stop creating a path)
+	public string ID {
+		get{ return 
+			_tilePosition.x.ToString() + _tilePosition.y.ToString() + 
+			_startSide.x.ToString() + _startSide.y.ToString() + 
+			_direction.x.ToString() + _direction.y.ToString();
+		}
+	}
 }

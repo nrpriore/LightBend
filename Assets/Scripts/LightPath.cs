@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,10 +23,18 @@ public class LightPath {
 
 		_path.Clear();
 		LightSegment segment = startSegment;
-		_path.Add(segment);
+		//_path.Add(segment);
 		while(!segment.IsEnd) {
 			segment = GetNextSegment(segment);
+
+			if(_path.Any(x => x.ID == segment.ID)) {
+				break;
+			}
+
 			_path.Add(segment);
+		}
+		if(segment.IsEnd) {
+			DrawPathOffScreen(segment);
 		}
 
 		foreach(LightSegment ls in _path) {
@@ -52,5 +61,23 @@ public class LightPath {
 			endSide * -1,
 			prevSegment.Direction
 		);
+	}
+
+	private void DrawPathOffScreen(LightSegment prevSegment) {
+		for(int i = 0; i < 10; i++) {
+			Vector2 endSide = prevSegment.StartSide + prevSegment.Direction;
+
+			Vector2 nextTile = prevSegment.TilePosition + endSide;
+			Vector2 nextTileSide = endSide * -1;
+		
+			LightSegment nextSegment = new LightSegment(
+				prevSegment.TilePosition + endSide,
+				endSide * -1,
+				prevSegment.Direction
+			);
+
+			_path.Add(nextSegment);
+			prevSegment = nextSegment;
+		}
 	}
 }
