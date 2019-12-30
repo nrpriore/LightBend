@@ -26,8 +26,8 @@ public class LightSegment {
 		get{ return 
 			(_tilePosition.y == 0 && _startSide.y + _direction.y == -1) ||								// Bottom
 			(_tilePosition.x == 0 && _startSide.x + _direction.x == -1) ||								// Left
-			(_tilePosition.y == GridController.GridSize.y - 1 && _startSide.y + _direction.y == 1) ||	// Top
-			(_tilePosition.x == GridController.GridSize.x - 1 && _startSide.x + _direction.x == 1)		// Right
+			(_tilePosition.y == LevelController.GridSize.y - 1 && _startSide.y + _direction.y == 1) ||	// Top
+			(_tilePosition.x == LevelController.GridSize.x - 1 && _startSide.x + _direction.x == 1)		// Right
 		;}
 	}
 }
