@@ -63,6 +63,8 @@ public class LevelController : MonoBehaviour {
 		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
 
 		_startSegment = startSegment;
+		float angleDirection = (_startSegment.Direction.x * _startSegment.Direction.y > 0)? -1 : 1;
+		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), new Vector2(0,0), Quaternion.Euler(0,0,45 * angleDirection));
 		BuildPath();
 	}
 
