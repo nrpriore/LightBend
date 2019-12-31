@@ -6,6 +6,7 @@ public class LevelController : MonoBehaviour {
 	// Public references
 	public Tile[][] Grid { get{ return _grid;} }
 	public Vector2 GridSize { get{ return _gridSize;} }
+	public LightSegment StartCoil { get{ return _startCoil;} }
 	public LightSegment EndCoil { get{ return _endCoil;} }
 
 	// Private references
@@ -16,6 +17,7 @@ public class LevelController : MonoBehaviour {
 	private Vector2 _gridSize;
 	private LightPath _path;
 	private LightSegment _startSegment;
+	private LightSegment _startCoil;
 	private LightSegment _endCoil;
 
 
@@ -68,6 +70,7 @@ public class LevelController : MonoBehaviour {
 		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
 
 		_startSegment = startSegment;
+		_startCoil = new LightSegment(_startSegment.TilePosition, _startSegment.EndSide, _startSegment.Direction * -1);
 		float angleDirection = (_startSegment.Direction.x * _startSegment.Direction.y > 0)? -1 : 1;
 		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_startSegment.TilePosition), Quaternion.Euler(0,0,45 * angleDirection));
 

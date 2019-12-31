@@ -36,9 +36,13 @@ public class LightPath {
 			if(_path.Any(x => x.ID == segment.ID)) {
 				break; // Stop building if we've somehow hit an infinite loop
 			}
+
 			if(segment.ID == _level.EndCoil.ID) {
 				_level.CompleteLevel();
 				break; // Stop building on Win Condition
+			}
+			else if(segment.CollisionID == _level.StartCoil.CollisionID || segment.CollisionID == _level.EndCoil.CollisionID) {
+				break; // Stop building if the LightPath hits a coil at the wrong direction
 			}
 
 			_path.Add(segment);
@@ -59,10 +63,8 @@ public class LightPath {
 	// Private Methods ------------------------------------------- //
 	// Generates the next LightSegment based on the given previous LightSegment. Interacts with Tokens
 	private LightSegment GetNextSegment(LightSegment prevSegment) {
-		Vector2 endSide = prevSegment.StartSide + prevSegment.Direction;
-
-		Vector2 nextTile = prevSegment.TilePosition + endSide;
-		Vector2 nextTileSide = endSide * -1;
+		Vector2 nextTile = prevSegment.TilePosition + prevSegment.EndSide;
+		Vector2 nextTileSide = prevSegment.EndSide * -1;
 		
 		Token token = _level.Grid[(int)nextTile.x][(int)nextTile.y].Token;
 		if(token != null) {
@@ -70,8 +72,8 @@ public class LightPath {
 		}
 
 		return new LightSegment(
-			prevSegment.TilePosition + endSide,
-			endSide * -1,
+			prevSegment.TilePosition + prevSegment.EndSide,
+			prevSegment.EndSide * -1,
 			prevSegment.Direction
 		);
 	}
@@ -89,14 +91,12 @@ public class LightPath {
 	// Extends the LightPath from the border Tile to the end of the screen for realistic effect
 	private void DrawPathOffScreen(LightSegment prevSegment) {
 		for(int i = 0; i < 10; i++) {
-			Vector2 endSide = prevSegment.StartSide + prevSegment.Direction;
-
-			Vector2 nextTile = prevSegment.TilePosition + endSide;
-			Vector2 nextTileSide = endSide * -1;
+			Vector2 nextTile = prevSegment.TilePosition + prevSegment.EndSide;
+			Vector2 nextTileSide = prevSegment.EndSide * -1;
 		
 			LightSegment nextSegment = new LightSegment(
-				prevSegment.TilePosition + endSide,
-				endSide * -1,
+				prevSegment.TilePosition + prevSegment.EndSide,
+				prevSegment.EndSide * -1,
 				prevSegment.Direction
 			);
 

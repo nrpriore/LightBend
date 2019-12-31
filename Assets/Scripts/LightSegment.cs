@@ -7,6 +7,7 @@ public class LightSegment {
 	public Vector2 TilePosition { get{ return _tilePosition;} }
 	public Vector2 StartSide { get{ return _startSide;} }
 	public Vector2 Direction { get{ return _direction;} }
+	public Vector2 EndSide { get{ return _startSide + _direction;} }
 
 	// Private references
 	private Vector2 _tilePosition;
@@ -29,6 +30,13 @@ public class LightSegment {
 			_tilePosition.x.ToString() + _tilePosition.y.ToString() + 
 			_startSide.x.ToString() + _startSide.y.ToString() + 
 			_direction.x.ToString() + _direction.y.ToString();
+		}
+	}
+	// Generates an ID to check for collisions (doesn't include _direction)
+	public string CollisionID {
+		get{ return 
+			_tilePosition.x.ToString() + _tilePosition.y.ToString() + 
+			_startSide.x.ToString() + _startSide.y.ToString();
 		}
 	}
 }
