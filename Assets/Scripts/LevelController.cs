@@ -62,7 +62,7 @@ public class LevelController : MonoBehaviour {
 		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
 		position = new Vector2(5,2);
 		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
-		position = new Vector2(3,2);
+		position = new Vector2(3,4);
 		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
 		position = new Vector2(4,2);
 		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
