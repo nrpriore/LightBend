@@ -2,17 +2,22 @@
 
 // Governs all level "events" (creation, win condition, UI interaction, etc)
 public class LevelController : MonoBehaviour {
-	public static Vector2 GridSize;	// Temporary variable until better system is built
 
+	// Public references
 	public Tile[][] Grid { get{ return _grid;} }
+	public Vector2 GridSize { get{ return _gridSize;} }
+	public LightSegment EndCoil { get{ return _endCoil;} }
 
-	// Private component references
+	// Private references
 	private GameController _game;
 	private Transform _gridTransform;
 	private Transform _tokensTransform;
 	private Tile[][] _grid;
+	private Vector2 _gridSize;
 	private LightPath _path;
 	private LightSegment _startSegment;
+	private LightSegment _endCoil;
+
 
 	// MonoBehaviour Methods ------------------------------------- //
 	// Mimics a constructor. Call this when adding the component from GameController, don't put anything in Start()
@@ -29,7 +34,7 @@ public class LevelController : MonoBehaviour {
 	// Public Methods -------------------------------------------- //
 	// Creates a Tile map
 	public void CreateGrid(Vector2 size) {
-		GridSize = size;
+		_gridSize = size = size + (2 * Vector2.one);	// Creates the disabled border tiles
 		_grid = new Tile[(int)size.x][];
 
 		for(int x = 0; x < size.x; x++) {
@@ -64,7 +69,11 @@ public class LevelController : MonoBehaviour {
 
 		_startSegment = startSegment;
 		float angleDirection = (_startSegment.Direction.x * _startSegment.Direction.y > 0)? -1 : 1;
-		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), new Vector2(0,0), Quaternion.Euler(0,0,45 * angleDirection));
+		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_startSegment.TilePosition), Quaternion.Euler(0,0,45 * angleDirection));
+
+		_endCoil = new LightSegment(new Vector2(2,0), new Vector2(0,1), new Vector2(-1,-1));
+		angleDirection = (_endCoil.Direction.x * _endCoil.Direction.y > 0)? -1 : 1;
+		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_endCoil.TilePosition), Quaternion.Euler(0,0,45 * angleDirection));
 		BuildPath();
 	}
 
@@ -78,8 +87,22 @@ public class LevelController : MonoBehaviour {
 		_path.Build(_startSegment);
 	}
 
+	// Beat Level event
+	public void CompleteLevel() {
+		Debug.Log("Level beaten");
+	}
 
+
+	// Private Methods ------------------------------------------- //
+	// Returns if the x,y coordinate is one of the disabled border tiles
 	private bool IsBorder(int x, int y) {
 		return x == 0 || x == GridSize.x - 1 || y == 0 || y == GridSize.y - 1;
+	}
+	// Returns the placement of a Coil given a particular border tile
+	private Vector2 CoilPosition(Vector2 tilePosition) {
+		return new Vector2(
+			Mathf.Max(0.5f, Mathf.Min(tilePosition.x, GridSize.x - 1.5f)),
+			Mathf.Max(0.5f, Mathf.Min(tilePosition.y, GridSize.y - 1.5f))
+		);
 	}
 }

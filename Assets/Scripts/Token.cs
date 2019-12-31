@@ -18,9 +18,11 @@ public class Token : MonoBehaviour {
 
 	private bool _onTile;			// Is the token currently attached to a tile (not mid drag) - triggers LightPath redraw
 
+	// Method to override in each derived class - placing at top for visibility
 	public virtual LightSegment BendPath(LightSegment prevSegment) {
 		throw new System.Exception("This should never be called. Call the derived class's BendPath()");
 	}
+
 
 	// MonoBehaviour Methods ------------------------------------- //
 	// Mimics constructor. Initializes variables - don't use Start()
@@ -87,8 +89,8 @@ public class Token : MonoBehaviour {
 	// Returns nearest Tile position if endPosition is within MAX_SNAP_DISTANCE from it, otherwise the Initial position of the Token
 	private Vector2 TargetTilePosition(Vector2 endPosition) {
 		Vector2 nearestTilePosition = new Vector2(
-			(int)Mathf.Max(0, Mathf.Min(LevelController.GridSize.x - 1, endPosition.x + 0.5f)),
-			(int)Mathf.Max(0, Mathf.Min(LevelController.GridSize.y - 1, endPosition.y + 0.5f))
+			(int)Mathf.Max(0, Mathf.Min(_level.GridSize.x - 1, endPosition.x + 0.5f)),
+			(int)Mathf.Max(0, Mathf.Min(_level.GridSize.y - 1, endPosition.y + 0.5f))
 		);
 
 		Tile tile = _level.Grid[(int)nearestTilePosition.x][(int)nearestTilePosition.y];

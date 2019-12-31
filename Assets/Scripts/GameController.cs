@@ -3,12 +3,13 @@
 // Entry point of the application
 public class GameController : MonoBehaviour {
 
-	// Public Component references
+	// Public references
 	public LevelController LC { get{ return _lc;} }
+	public LevelGenerator LG { get{ return _lg;} }
 
-	#region private variables for properties
+	// Private references
 	private LevelController _lc;
-	#endregion
+	private LevelGenerator _lg;
 
 
 	// MonoBehaviour Methods ------------------------------------- //
@@ -16,8 +17,7 @@ public class GameController : MonoBehaviour {
 	void Awake() {
 		AddComponents();
 
-		_lc.CreateGrid(new Vector2(7,9));
-		_lc.CreateLevel(new LightSegment(new Vector2(0,5), new Vector2(0, 1), new Vector2(1, -1)));
+		_lg.CreateLevel();
 	}
 
 
@@ -25,5 +25,6 @@ public class GameController : MonoBehaviour {
 	// Adds relevant components at game start
 	private void AddComponents() {
 		_lc = gameObject.AddComponent<LevelController>().Initialize(this);
+		_lg = new LevelGenerator(_lc);
 	}
 }
