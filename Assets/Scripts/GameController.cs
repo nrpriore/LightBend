@@ -17,7 +17,7 @@ public class GameController : MonoBehaviour {
 	void Awake() {
 		AddComponents();
 
-		_lg.CreateLevel();
+		_lg.CreateLevel("dickdick");
 	}
 
 

@@ -21,34 +21,20 @@ public class LightPath {
 
 	// Public Methods -------------------------------------------- //
 	// Builds the LightPath starting at the given starting LightSegment
-	public void Build(LightSegment startSegment) {
+	public void Build() {
 		// Clear old path
 		foreach(Transform child in _pathTransform) {
 			MonoBehaviour.Destroy(child.gameObject);
 		}
-		_path.Clear();
 
 		// Create new path
-		LightSegment segment = startSegment;
-		while(!IsSegmentAtBorder(segment)) {
-			segment = GetNextSegment(segment);
-
-			if(_path.Any(x => x.ID == segment.ID)) {
-				break; // Stop building if we've somehow hit an infinite loop
-			}
-
-			if(segment.ID == _level.EndCoil.ID) {
-				_level.CompleteLevel();
-				break; // Stop building on Win Condition
-			}
-			else if(segment.CollisionID == _level.StartCoil.CollisionID || segment.CollisionID == _level.EndCoil.CollisionID) {
-				break; // Stop building if the LightPath hits a coil at the wrong direction
-			}
-
-			_path.Add(segment);
+		if(BuildAndTestPath(out _path)) {
+			_level.CompleteLevel();
 		}
-		if(IsSegmentAtBorder(segment)) {
-			DrawPathOffScreen(segment);
+		else if(_path.Count > 0) {
+			if(IsSegmentAtBorder(_path[_path.Count - 1])) {
+				DrawPathOffScreen(_path[_path.Count - 1]);
+			}
 		}
 
 		// Actually create the GameObjects
@@ -59,6 +45,32 @@ public class LightPath {
 		}
 	}
 
+	// Generates the List<LightSegment> _path, returns true if path beats the level
+	public bool BuildAndTestPath(out List<LightSegment> lightPath) {
+		List<LightSegment> path = new List<LightSegment>();
+		bool success = false;
+
+		LightSegment segment = _level.StartSegment;
+		while(!IsSegmentAtBorder(segment)) {
+			segment = GetNextSegment(segment);
+
+			if(segment.ID == _level.EndCoil.ID) {
+				success = true;
+				break; // Stop building on Win Condition
+			}
+			else if(segment.CollisionID == _level.StartCoil.CollisionID || segment.CollisionID == _level.EndCoil.CollisionID) {
+				break; // Stop building if the LightPath hits a coil at the wrong direction
+			}
+			else if(path.Any(x => x.ID == segment.ID)) {
+				break; // Stop building if we've somehow hit an infinite loop
+			}
+
+			path.Add(segment);
+		}
+
+		lightPath = path;
+		return success;
+	}
 
 	// Private Methods ------------------------------------------- //
 	// Generates the next LightSegment based on the given previous LightSegment. Interacts with Tokens
@@ -68,7 +80,7 @@ public class LightPath {
 		
 		Token token = _level.Grid[(int)nextTile.x][(int)nextTile.y].Token;
 		if(token != null) {
-			return token.BendPath(prevSegment);
+			return token.Type.BendPath(prevSegment);
 		}
 
 		return new LightSegment(

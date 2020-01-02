@@ -1,15 +1,23 @@
 ﻿using UnityEngine;
+using System.Collections;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
+
+// Base class for Types of Tokens - placing above for visibility
+public abstract class TokenType {
+	public abstract LightSegment BendPath(LightSegment prevSegment);
+}
 
 // Base class for placeable pieces that governs movement
 public class Token : MonoBehaviour {
+	public TokenType Type { get{ return _type;} }
+
 	private const float MAX_SNAP_DISTANCE = 0f; 	// Max distance at DragEnd for a valid snap (middle of 4 tokens = 0.7071f, 0 = infinite)
 	private const float LERP_THRESHOLD = 0.001f;	// Distance at which Update() will stop Lerping, to stop infinite Lerping
 	private const float LERP_SPEED = 30f;			// Speed factor of Lerp
 	private const float REDRAW_DISTANCE = 0.3f;		// Distance at which LightPath is redrawn when Token is being dragged
 
 	private LevelController _level;
+	private TokenType _type;
 
 	private bool _dragging;			// If the token is being dragged currently
 	private Vector2 _offset;		// Offset vector so center of token doesn't snap to mousePosition on click
@@ -18,16 +26,12 @@ public class Token : MonoBehaviour {
 
 	private bool _onTile;			// Is the token currently attached to a tile (not mid drag) - triggers LightPath redraw
 
-	// Method to override in each derived class - placing at top for visibility
-	public virtual LightSegment BendPath(LightSegment prevSegment) {
-		throw new System.Exception("This should never be called. Call the derived class's BendPath()");
-	}
-
 
 	// MonoBehaviour Methods ------------------------------------- //
 	// Mimics constructor. Initializes variables - don't use Start()
-	public Token Initialize(Vector2 position, LevelController levelController) {
+	public Token Initialize(TokenType type, Vector2 position, LevelController levelController) {
 		_level = levelController;
+		_type = type;
 		_dragging = false;
 
 		transform.localPosition = _lerpTarget = _initialPos = position;
@@ -48,7 +52,22 @@ public class Token : MonoBehaviour {
 					_level.AssignTokenToTile(this, _lerpTarget);
 					_onTile = true;
 
-					_level.BuildPath();
+					_level.Path.Build();
+				}
+			}
+		}
+	}
+	void OnGUI() {
+		if(_dragging) {
+			Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			transform.localPosition = mousePos - _offset;
+
+			if(_onTile) {
+				if(Vector2.Distance(transform.localPosition, _initialPos) >= REDRAW_DISTANCE) {
+					_level.AssignTokenToTile(null, _initialPos);
+					_onTile = false;
+
+					_level.Path.Build();
 				}
 			}
 		}
@@ -61,19 +80,6 @@ public class Token : MonoBehaviour {
 		_initialPos = TargetTilePosition(transform.localPosition);
 		_dragging = true;
 		gameObject.GetComponent<SpriteRenderer>().sortingOrder = 3;
-	}
-	public void OnMouseDrag() {
-		Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		transform.localPosition = mousePos - _offset;
-
-		if(_onTile) {
-			if(Vector2.Distance(transform.localPosition, _initialPos) >= REDRAW_DISTANCE) {
-				_level.AssignTokenToTile(null, _initialPos);
-				_onTile = false;
-
-				_level.BuildPath();
-			}
-		}
 	}
 	public void OnMouseUp() {
 		_lerpTarget = TargetTilePosition(transform.localPosition);

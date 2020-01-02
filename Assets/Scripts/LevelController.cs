@@ -4,10 +4,12 @@
 public class LevelController : MonoBehaviour {
 
 	// Public references
-	public Tile[][] Grid { get{ return _grid;} }
-	public Vector2 GridSize { get{ return _gridSize;} }
-	public LightSegment StartCoil { get{ return _startCoil;} }
-	public LightSegment EndCoil { get{ return _endCoil;} }
+	public Tile[][] Grid 				{ get{ return _grid;} }
+	public Vector2 GridSize 			{ get{ return _gridSize;} }
+	public LightPath Path 				{ get{ return _path;} }
+	public LightSegment StartSegment 	{ get{ return _startSegment;} }
+	public LightSegment StartCoil 		{ get{ return _startCoil;} }
+	public LightSegment EndCoil 		{ get{ return _endCoil;} }
 
 	// Private references
 	private GameController _game;
@@ -35,59 +37,70 @@ public class LevelController : MonoBehaviour {
 
 	// Public Methods -------------------------------------------- //
 	// Creates a Tile map
-	public void CreateGrid(Vector2 size) {
-		_gridSize = size = size + (2 * Vector2.one);	// Creates the disabled border tiles
-		_grid = new Tile[(int)size.x][];
+	public void SetGrid(Tile[][] grid) {
+		_gridSize = new Vector2(grid.Length, grid[0].Length);
+		_grid = grid;
+	}
+	public void InstantiateGrid() {
+		if(_grid.Length > 0) {
+			int width = _grid.Length;
+			int height = _grid[0].Length;
 
-		for(int x = 0; x < size.x; x++) {
-			_grid[x] = new Tile[(int)size.y];
-
-			for(int y = 0; y < size.y; y++) {
-				bool enabled = !IsBorder(x, y);
-				_grid[x][y] = new Tile(enabled);
-
-				if(enabled) {
-					Instantiate(Resources.Load<GameObject>("Prefabs/Tile"), new Vector2(x, y), Quaternion.identity, _gridTransform);
+			for(int x = 0; x < width; x++) {
+				for(int y = 0; y < height; y++) {
+					if(_grid[x][y].Enabled) {
+						Instantiate(Resources.Load<GameObject>("Prefabs/Tile"), new Vector2(x, y), Quaternion.identity, _gridTransform);
+					}
 				}
 			}
+			Camera.main.transform.localPosition = new Vector3((width - 1) / 2f, (height - 1) / 2f, Camera.main.transform.localPosition.z);
+			Camera.main.orthographicSize = width / Camera.main.aspect / 2f;
 		}
-		Camera.main.transform.localPosition = new Vector3((size.x - 1) / 2f, (size.y - 1) / 2f, Camera.main.transform.localPosition.z);
+		else {
+			throw new System.Exception("Don't call this before _grid has been set in SetGrid()");
+		}
 	}
 
 	// Sets up the level. Adds components and builds the initial path
-	public void CreateLevel(LightSegment startSegment) {
-		Vector2 position = new Vector2(2,2);
-		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
-		position = new Vector2(1,2);
-		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
-		position = new Vector2(5,2);
-		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
-		position = new Vector2(3,4);
-		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+	public void SetLevel(LightSegment start = null, LightSegment end = null) {
+		if(start != null) {
+			_startSegment = start;
+			_startCoil = new LightSegment(_startSegment.TilePosition, _startSegment.EndSide, _startSegment.Direction * -1);
+		} 
+		
+		if(end != null) {
+			_endCoil = end;
+		}
+	}
+	public void InstantiateLevel() {
+		for(int x = 1; x < _gridSize.x; x++) {
+			for(int y = 0; y < _gridSize.y; y++) {
+				if(_grid[x][y].TokenType != null) {
+					Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(_grid[x][y].TokenType, new Vector2(x, y), this);
+				}
+			}
+		}
+
+		/*Vector2 position;
 		position = new Vector2(4,2);
-		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(new Block(), position, this);
 		position = new Vector2(1,1);
-		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(position, this);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(new Block(), position, this);
+		position = new Vector2(2,4);
+		Instantiate(Resources.Load<GameObject>("Prefabs/Block"), _tokensTransform).GetComponent<Token>().Initialize(new Block(), position, this);*/
 
-		_startSegment = startSegment;
-		_startCoil = new LightSegment(_startSegment.TilePosition, _startSegment.EndSide, _startSegment.Direction * -1);
-		float angleDirection = (_startSegment.Direction.x * _startSegment.Direction.y > 0)? -1 : 1;
-		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_startSegment.TilePosition), Quaternion.Euler(0,0,45 * angleDirection));
+		float angleDirection = (_startCoil.Direction.x * _startCoil.Direction.y > 0)? -1 : 1;
+		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_startCoil), Quaternion.Euler(0,0,45 * angleDirection));
 
-		_endCoil = new LightSegment(new Vector2(2,0), new Vector2(0,1), new Vector2(-1,-1));
 		angleDirection = (_endCoil.Direction.x * _endCoil.Direction.y > 0)? -1 : 1;
-		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_endCoil.TilePosition), Quaternion.Euler(0,0,45 * angleDirection));
-		BuildPath();
+		Instantiate(Resources.Load<GameObject>("Prefabs/Coil"), CoilPosition(_endCoil), Quaternion.Euler(0,0,45 * angleDirection));
+
+		_path.Build();
 	}
 
 	// Assigns a Token to a Tile on the _grid
 	public void AssignTokenToTile(Token token, Vector2 position) {
 		_grid[(int)position.x][(int)position.y].AssignToken(token);
-	}
-
-	// Builds the LightPath on the screen
-	public void BuildPath() {
-		_path.Build(_startSegment);
 	}
 
 	// Beat Level event
@@ -102,10 +115,10 @@ public class LevelController : MonoBehaviour {
 		return x == 0 || x == GridSize.x - 1 || y == 0 || y == GridSize.y - 1;
 	}
 	// Returns the placement of a Coil given a particular border tile
-	private Vector2 CoilPosition(Vector2 tilePosition) {
+	private Vector2 CoilPosition(LightSegment coil) {
 		return new Vector2(
-			Mathf.Max(0.5f, Mathf.Min(tilePosition.x, GridSize.x - 1.5f)),
-			Mathf.Max(0.5f, Mathf.Min(tilePosition.y, GridSize.y - 1.5f))
+			coil.TilePosition.x + 0.5f * coil.StartSide.x,
+			coil.TilePosition.y + 0.5f * coil.StartSide.y
 		);
 	}
 }
